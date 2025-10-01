@@ -27,10 +27,14 @@ jobs:
       - name: Convert Org to Markdown
         run: |
           for f in "_posts"/*.org; do
-            base=\$(basename "\$f" .org)
-            pandoc "\$f" -f org -t gfm -o "_posts/\${base}.md"
+            # The 'if' is a safety check to skip if no files match the pattern
+            if [ -f "$f" ]; then
+                # Pandoc converts the Org file to GitHub Flavored Markdown
+                base=$(basename "$f" .org)
+                pandoc "$f" -f org -t gfm -o "_posts/${base}.md"
+            fi
           done
-
+          
       - name: Build Jekyll site
         run: jekyll build
 
