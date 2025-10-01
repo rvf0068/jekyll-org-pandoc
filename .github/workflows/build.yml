@@ -26,7 +26,7 @@ jobs:
 
       - name: Convert Org to Markdown
         run: |
-          for f in _posts/*.org; do
+          for f in "_posts"/*.org; do
             base=\$(basename "\$f" .org)
             pandoc "\$f" -f org -t gfm -o "_posts/\${base}.md"
           done
