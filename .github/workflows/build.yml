@@ -1,45 +1,68 @@
-name: Build and Deploy Jekyll with Org
+# .github/workflows/build.yml
+
+name: Jekyll Build with Org Conversion
 
 on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build:
+  jekyll:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Install Ruby and Jekyll
+      # ----------------------------------------------------------------------
+      # STEP 1: Setup Ruby and Install Jekyll Dependencies
+      # Fixes the 'minima theme could not be found' error.
+      # ----------------------------------------------------------------------
+      - name: Setup Ruby and Install Dependencies
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: '3.2'
-          bundler-cache: true
+          bundler-cache: true # This runs 'bundle install' and caches gems.
 
-      - name: Install Jekyll
-        run: gem install jekyll bundler
-
-      - name: Install Pandoc
-        run: sudo apt-get update && sudo apt-get install -y pandoc
-
-      - name: Convert Org to Markdown
-        run: |
-          for f in "_posts"/*.org; do
-            # The 'if' is a safety check to skip if no files match the pattern
-            if [ -f "$f" ]; then
-                # Pandoc converts the Org file to GitHub Flavored Markdown
-                base=$(basename "$f" .org)
-                pandoc "$f" -f org -t gfm -o "_posts/${base}.md"
-            fi
-          done
-          
-      - name: Build Jekyll site
-        run: jekyll build
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      # ----------------------------------------------------------------------
+      # STEP 2: Convert Org-mode to Markdown using Pandoc Container
+      # This step uses the pandoc container to run the conversion loop.
+      # It also uses the corrected, unescaped Bash syntax.
+      # ----------------------------------------------------------------------
+      - name: Convert Org to Markdown using Pandoc
+        # Use the pandoc/core container to ensure the tool is available
+        uses: docker://pandoc/core:3.7
         with:
-          github_token: \${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_site
+          args: |
+            # Set the working directory to the repository root inside the container
+            /bin/sh -c "
+            for f in _posts/*.org; do
+              # Check if the file exists (important for safety with globs)
+              if [ -f \"$f\" ]; then
+                  base=$(basename \"$f\" .org)
+                  # Pandoc converts Org to GitHub Flavored Markdown (gfm)
+                  pandoc \"$f\" -f org -t gfm -o \"_posts/${base}.md\"
+              fi
+            done
+            "
+
+      # ----------------------------------------------------------------------
+      # STEP 3: Build the Jekyll site
+      # Uses 'bundle exec' to ensure the correct Jekyll version is run.
+      # ----------------------------------------------------------------------
+      - name: Build Jekyll site
+        run: |
+          # Use bundle exec to execute Jekyll with the installed gems
+          bundle exec jekyll build --trace
+
+      # ----------------------------------------------------------------------
+      # STEP 4: (Optional) Deploy or Upload Artifacts
+      # Add your deployment or artifact upload step here.
+      # ----------------------------------------------------------------------
+      - name: List built files (Optional Check)
+        run: ls -R _site/
+
