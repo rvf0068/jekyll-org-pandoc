@@ -34,22 +34,23 @@ jobs:
       # It also uses the corrected, unescaped Bash syntax.
       # ----------------------------------------------------------------------
       - name: Convert Org to Markdown using Pandoc
-        # Use the pandoc/core container to ensure the tool is available
         uses: docker://pandoc/core:3.7
         with:
           args: |
-            # Set the working directory to the repository root inside the container
-            /bin/sh -c "
+            /bin/bash -c "
+            # Set nullglob to make sure the loop is skipped if no files exist
+            shopt -s nullglob
+            
             for f in _posts/*.org; do
-              # Check if the file exists (important for safety with globs)
+              # The nullglob option handles the case where no files exist, 
+              # so the 'if' check is optional but harmless here.
+              # We use 'if' for safety against literal unmatched globs in other environments.
               if [ -f \"$f\" ]; then
                   base=$(basename \"$f\" .org)
-                  # Pandoc converts Org to GitHub Flavored Markdown (gfm)
                   pandoc \"$f\" -f org -t gfm -o \"_posts/${base}.md\"
               fi
             done
             "
-
       # ----------------------------------------------------------------------
       # STEP 3: Build the Jekyll site
       # Uses 'bundle exec' to ensure the correct Jekyll version is run.
