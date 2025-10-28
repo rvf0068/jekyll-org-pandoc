@@ -54,6 +54,7 @@ for f in _posts/*.org; do
   base=$(basename "$f" .org)
   output="_posts/${base}.md"
   pandoc "$f" -f org -t markdown --standalone -o "$output"
+  # Note: On macOS, use: sed -i '' '1a layout: post' "$output"
   sed -i '1a layout: post' "$output"
 done
 
