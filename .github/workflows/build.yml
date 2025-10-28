@@ -40,6 +40,7 @@ jobs:
       # STEP 3: Convert Org-mode to Markdown using Pandoc
       # This step converts org files to markdown with proper Jekyll front matter.
       # Uses --standalone to extract org metadata into YAML front matter.
+      # Converts math delimiters to LaTeX style: \(...\) and \[...\]
       # ----------------------------------------------------------------------
       - name: Convert Org to Markdown
         run: |
@@ -55,10 +56,19 @@ jobs:
               # Add layout field to front matter if it starts with ---
               if head -n 1 "$output" | grep -q '^---$'; then
                 sed -i '1a layout: post' "$output"
-                echo "Converted $f to $output with layout front matter"
-              else
-                echo "Warning: $output does not start with YAML front matter"
               fi
+              
+              # Convert math delimiters from $ and $$ to \( \) and \[ \]
+              # First, handle display math with newlines ($$\n...\n$$) -> \[...\]
+              perl -i -0pe 's/\$\$\n([^\$]+?)\n\$\$/\\[\n$1\n\\]/gs' "$output"
+              
+              # Then handle inline display math ($$...$$) -> \[...\]
+              perl -i -pe 's/\$\$(.+?)\$\$/\\[$1\\]/g' "$output"
+              
+              # Finally handle inline math ($...$) -> \(...\)
+              perl -i -pe 's/(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)/\\($1\\)/g' "$output"
+              
+              echo "Converted $f to $output with LaTeX-style math delimiters"
             fi
           done
       # ----------------------------------------------------------------------

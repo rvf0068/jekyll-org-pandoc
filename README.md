@@ -65,17 +65,26 @@ Math expressions are rendered using [KaTeX](https://katex.org/) after the Org fi
 
 To build and preview the site locally:
 
+**Note:** On macOS, use `sed -i ''` instead of `sed -i` in the commands below.
+
 ```bash
 # Install dependencies
 bundle install
 
-# Convert Org files to Markdown (requires Pandoc)
+# Convert Org files to Markdown (requires Pandoc and Perl)
 for f in _posts/*.org; do
   base=$(basename "$f" .org)
   output="_posts/${base}.md"
   pandoc "$f" -f org -t markdown --standalone -o "$output"
-  # Note: On macOS, use: sed -i '' '1a layout: post' "$output"
   sed -i '1a layout: post' "$output"
+  
+  # Convert math delimiters from $ and $$ to \( \) and \[ \]
+  # First, handle display math with newlines
+  perl -i -0pe 's/\$\$\n([^\$]+?)\n\$\$/\\[\n$1\n\\]/gs' "$output"
+  # Then handle inline display math
+  perl -i -pe 's/\$\$(.+?)\$\$/\\[$1\\]/g' "$output"
+  # Finally handle inline math
+  perl -i -pe 's/(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)/\\($1\\)/g' "$output"
 done
 
 # Build and serve the site
