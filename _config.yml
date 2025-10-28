@@ -5,3 +5,8 @@ baseurl: "/test-jekyll-ci"
 theme: minima
 
 markdown: kramdown
+
+# Exclude org files from Jekyll processing since they're converted to markdown
+exclude:
+  - "*.org"
+  - "_posts/*.org"
