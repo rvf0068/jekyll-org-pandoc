@@ -78,13 +78,13 @@ for f in _posts/*.org; do
   pandoc "$f" -f org -t markdown --standalone -o "$output"
   sed -i '1a layout: post' "$output"
   
-  # Convert math delimiters from $ and $$ to \( \) and \[ \]
+  # Convert math delimiters from $ and $$ to \\( \\) and \\[ \\]
   # First, handle display math with newlines
-  perl -i -0pe 's/\$\$\n([^\$]+?)\n\$\$/\\[\n$1\n\\]/gs' "$output"
+  perl -i -0pe 's/\$\$\n([^\$]+?)\n\$\$/\\\\[\n$1\n\\\\]/gs' "$output"
   # Then handle inline display math
-  perl -i -pe 's/\$\$(.+?)\$\$/\\[$1\\]/g' "$output"
+  perl -i -pe 's/\$\$(.+?)\$\$/\\\\[$1\\\\]/g' "$output"
   # Finally handle inline math
-  perl -i -pe 's/(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)/\\($1\\)/g' "$output"
+  perl -i -pe 's/(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)/\\\\($1\\\\)/g' "$output"
 done
 
 # Build and serve the site
