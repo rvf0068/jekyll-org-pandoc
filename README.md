@@ -69,13 +69,21 @@ To build and preview the site locally:
 # Install dependencies
 bundle install
 
-# Convert Org files to Markdown (requires Pandoc)
+# Convert Org files to Markdown (requires Pandoc and Perl)
 for f in _posts/*.org; do
   base=$(basename "$f" .org)
   output="_posts/${base}.md"
   pandoc "$f" -f org -t markdown --standalone -o "$output"
-  # Note: On macOS, use: sed -i '' '1a layout: post' "$output"
+  # Note: On macOS, use: sed -i '' '1a\
+  # layout: post' "$output"
   sed -i '1a layout: post' "$output"
+  
+  # Convert math delimiters from $ and $$ to \( \) and \[ \]
+  # First, handle display math ($$...$$) -> \[...\]
+  perl -i -0pe 's/\$\$\n([^\$]+?)\n\$\$/\\[\n$1\n\\]/gs' "$output"
+  
+  # Then handle inline math ($...$) -> \(...\)
+  perl -i -pe 's/(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)/\\($1\\)/g' "$output"
 done
 
 # Build and serve the site
