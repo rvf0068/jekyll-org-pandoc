@@ -59,10 +59,13 @@ jobs:
               fi
               
               # Convert math delimiters from $ and $$ to \( \) and \[ \]
-              # First, handle display math ($$...$$) -> \[...\]
+              # First, handle display math with newlines ($$\n...\n$$) -> \[...\]
               perl -i -0pe 's/\$\$\n([^\$]+?)\n\$\$/\\[\n$1\n\\]/gs' "$output"
               
-              # Then handle inline math ($...$) -> \(...\)
+              # Then handle inline display math ($$...$$) -> \[...\]
+              perl -i -pe 's/\$\$(.+?)\$\$/\\[$1\\]/g' "$output"
+              
+              # Finally handle inline math ($...$) -> \(...\)
               perl -i -pe 's/(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)/\\($1\\)/g' "$output"
               
               echo "Converted $f to $output with LaTeX-style math delimiters"
