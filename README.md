@@ -6,6 +6,7 @@ A Jekyll blog that supports writing posts in Org-mode format, automatically conv
 
 - Write blog posts in Org-mode (`.org` files)
 - Automatic conversion to Markdown using Pandoc
+- Math rendering with KaTeX (supports inline and display math)
 - Deployed to GitHub Pages via GitHub Actions
 
 ## How to Enable GitHub Pages Deployment
@@ -40,6 +41,25 @@ Your posts will now appear in the "Recent Posts" section on your site!
    ```
 4. Write your content using Org-mode syntax
 5. Commit and push - the workflow will handle the rest!
+
+### Using Math in Posts
+
+The blog supports mathematical expressions using LaTeX syntax in Org-mode:
+
+- **Inline math**: Use `\(` and `\)` delimiters
+  ```org
+  Inline math with \(a^2 + b^2 = c^2\).
+  ```
+
+- **Display math**: Use `\[` and `\]` delimiters
+  ```org
+  Displayed math with:
+  \[
+  \int_0^1 x^2 \, dx = \frac{1}{3}
+  \]
+  ```
+
+Math expressions are rendered using [KaTeX](https://katex.org/) after the Org files are converted to Markdown.
 
 ## Local Development
 
