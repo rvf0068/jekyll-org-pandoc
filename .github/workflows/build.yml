@@ -52,10 +52,13 @@ jobs:
               # Convert org to markdown with standalone to get YAML front matter
               pandoc "$f" -f org -t markdown --standalone -o "$output"
               
-              # Add layout field to front matter
-              sed -i '1a layout: post' "$output"
-              
-              echo "Converted $f to $output"
+              # Add layout field to front matter if it starts with ---
+              if head -n 1 "$output" | grep -q '^---$'; then
+                sed -i '1a layout: post' "$output"
+                echo "Converted $f to $output with layout front matter"
+              else
+                echo "Warning: $output does not start with YAML front matter"
+              fi
             fi
           done
       # ----------------------------------------------------------------------

@@ -5,6 +5,7 @@ _site/
 .jekyll-metadata
 
 # Converted markdown files (generated from org files)
+# All posts should be written in .org format and converted to .md during build
 _posts/*.md
 
 # Bundler
