@@ -29,30 +29,37 @@ jobs:
           bundler-cache: true # This runs 'bundle install' and caches gems.
 
       # ----------------------------------------------------------------------
-      # STEP 2: Convert Org-mode to Markdown using Pandoc Container
-      # This step uses the pandoc container to run the conversion loop.
-      # It also uses the corrected, unescaped Bash syntax.
+      # STEP 2: Install Pandoc for conversion
       # ----------------------------------------------------------------------
-      - name: Convert Org to Markdown using Pandoc
-        uses: docker://pandoc/core:3.7
-        with:
-          args: |
-            /bin/bash -c "
-            # Set nullglob to make sure the loop is skipped if no files exist
-            shopt -s nullglob
-            
-            for f in _posts/*.org; do
-              # The nullglob option handles the case where no files exist, 
-              # so the 'if' check is optional but harmless here.
-              # We use 'if' for safety against literal unmatched globs in other environments.
-              if [ -f \"$f\" ]; then
-                  base=$(basename \"$f\" .org)
-                  pandoc \"$f\" -f org -t gfm -o \"_posts/${base}.md\"
-              fi
-            done
-            "
+      - name: Install Pandoc
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq pandoc
+      
       # ----------------------------------------------------------------------
-      # STEP 3: Build the Jekyll site
+      # STEP 3: Convert Org-mode to Markdown using Pandoc
+      # This step converts org files to markdown with proper Jekyll front matter.
+      # Uses --standalone to extract org metadata into YAML front matter.
+      # ----------------------------------------------------------------------
+      - name: Convert Org to Markdown
+        run: |
+          shopt -s nullglob
+          for f in _posts/*.org; do
+            if [ -f "$f" ]; then
+              base=$(basename "$f" .org)
+              output="_posts/${base}.md"
+              
+              # Convert org to markdown with standalone to get YAML front matter
+              pandoc "$f" -f org -t markdown --standalone -o "$output"
+              
+              # Add layout field to front matter
+              sed -i '1a layout: post' "$output"
+              
+              echo "Converted $f to $output"
+            fi
+          done
+      # ----------------------------------------------------------------------
+      # STEP 4: Build the Jekyll site
       # Uses 'bundle exec' to ensure the correct Jekyll version is run.
       # ----------------------------------------------------------------------
       - name: Build Jekyll site
@@ -61,7 +68,7 @@ jobs:
           bundle exec jekyll build --trace
 
       # ----------------------------------------------------------------------
-      # STEP 4: (Optional) Deploy or Upload Artifacts
+      # STEP 5: (Optional) Deploy or Upload Artifacts
       # Add your deployment or artifact upload step here.
       # ----------------------------------------------------------------------
       - name: List built files (Optional Check)
