@@ -68,6 +68,7 @@ jobs:
 
       # Setup GitHub Pages
       - name: Setup Pages
+        id: pages
         uses: actions/configure-pages@v5
 
       # Build with Jekyll
