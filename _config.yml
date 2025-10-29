@@ -1,7 +1,7 @@
 title: "My Org Blog"
 description: "A Jekyll blog built from Org files"
 url: "https://rvf0068.github.io"
-baseurl: "/test-jekyll-ci"
+baseurl: "/jekyll-org-pandoc"
 theme: minima
 
 markdown: kramdown
