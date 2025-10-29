@@ -90,7 +90,7 @@ done
 # Build and serve the site
 bundle exec jekyll serve
 
-# Visit http://localhost:4000/test-jekyll-ci/ in your browser
+# Visit http://localhost:4000/jekyll-org-pandoc/ in your browser
 ```
 
 ## Requirements
